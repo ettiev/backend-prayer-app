@@ -11,8 +11,11 @@ const userController = require("../controllers/user");
 //New User
 router.post("/new_user", userController.postNewUser);
 
+//Login
+router.post("/user", userController.postLogin);
+
 //Get User Data
-router.get("/user", userController.getUser);
+router.get("/user_info", userController.getRequests)
 
 //Add Request
 router.post("/add_request", userController.postAddRequest);

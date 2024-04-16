@@ -1,48 +1,35 @@
 const mongoose = require("mongoose");
 const express = require("express");
 
-const router = express.Router;
+const router = express.Router();
 
-const userSchema = require("../models/User");
+const userSchema = require("../models/user");
+const requestSchema = require("../models/request");
+const noteSchema = require("../models/note"); 
+const userController = require("../controllers/user");
 
 //New User
-router.post("/new_user", (req, res, next) => {
-
-})
+router.post("/new_user", userController.postNewUser);
 
 //Get User Data
-router.get("/user", (req, res, next) => {
-
-})
+router.get("/user", userController.getUser);
 
 //Add Request
-router.put("/add_request", (req, res, next) => {
-
-})
+router.post("/add_request", userController.postAddRequest);
 
 //Answered Request
-router.put("/answered_request", (req, res, next) => {
-
-})
+router.post("/answered_request", userController.postAnsweredRequest);
 
 //Remove Request
-router.put("/remove_request", (req, res, next) => {
-
-})
+router.delete("/remove_request", userController.deleteRemoveRequest);
 
 //Remove Answered Request
-router.put("/remove_answered_request", (req, res, next) => {
-
-})
+router.delete("/remove_answered_request", userController.deleteRemoveAnsweredRequest);
 
 //Add Note
-router.put("/add_note", (req, res, next) => {
-
-})
+router.post("/add_note", userController.postAddNote);
 
 //Remove Note
-router.put("/remove_note", (req, res, next) => {
-
-})
+router.delete("/remove_note", userController.deleteRemoveNote);
 
 module.exports = router;

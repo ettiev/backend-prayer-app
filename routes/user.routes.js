@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const path = require("path");
 const express = require("express");
 
 const router = express.Router();
@@ -14,25 +15,28 @@ router.post("/new_user", userController.postNewUser);
 //Login
 router.post("/user", userController.postLogin);
 
-//Get User Data
-router.get("/user_info", userController.getRequests)
+//Get Username
+router.get("/login_status", userController.getLoginStatus);
+
+//Get Prayer and Answered Requests
+router.get("/requests", userController.getRequests);
 
 //Add Request
 router.post("/add_request", userController.postAddRequest);
 
 //Answered Request
-router.post("/answered_request", userController.postAnsweredRequest);
+router.put("/answer_request/:requestId", userController.putAnswerRequest);
 
 //Remove Request
-router.delete("/remove_request", userController.deleteRemoveRequest);
-
-//Remove Answered Request
-router.delete("/remove_answered_request", userController.deleteRemoveAnsweredRequest);
+router.delete("/remove_request/:requestId", userController.deleteRemoveRequest);
 
 //Add Note
-router.post("/add_note", userController.postAddNote);
+router.post("/add_note/:requestId", userController.postAddNote);
 
 //Remove Note
-router.delete("/remove_note", userController.deleteRemoveNote);
+router.delete("/remove_note/:noteId", userController.deleteRemoveNote);
+
+//Logout
+router.delete("/logout", userController.deleteLogout);
 
 module.exports = router;

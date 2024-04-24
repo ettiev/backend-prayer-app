@@ -3,7 +3,7 @@ const Request = require("../models/request");
 const Note = require("../models/note");
 
 //New User
-exports.postNewUser = (req, res, next) => {
+exports.postNewUser = async (req, res, next) => {
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
@@ -16,7 +16,13 @@ exports.postNewUser = (req, res, next) => {
             password: password
         })
         return newUser.save()
-        .then(() => console.log("User successfully created!"))
+        .then((result) => {
+            console.log("User successfully created!")
+            res.status(200).json({
+                message: "New User is saved!!",
+                body: result,
+            })
+        })
         .catch((err) => console.log(err))   
     } else {
         throw(
@@ -49,7 +55,7 @@ exports.postNewUser = (req, res, next) => {
 // }
 
 //Login User
-exports.postLogin = (req, res, next) => {
+exports.postLogin = async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
 
@@ -58,12 +64,16 @@ exports.postLogin = (req, res, next) => {
         if (user && password === user.password) {
             req.session.isLoggedIn = true;
             req.session.user = user;
-            return req.session.save((err) => {
+            return req.session.save((result, err) => {
+                if (err) {console.log(err)};
                 if (!err) {
                     console.log("User is logged in!");
-                    console.log(req.session.user);
+                    console.log(req.session.user)
+                    res.status(200).json({
+                        message: "Fetched requests successfully!",
+                        body: req.session.user,
+                    })
                 };
-                if (err) {console.log(err)};
             })         
         } else {
             throw("The email or password that was entered is invalid!");
@@ -99,32 +109,48 @@ exports.postLogin = (req, res, next) => {
 // }
 }
 
-exports.getUsername = (req, res, next) => {
-    return (res.status(200).json({
-        message: "Fetched username successfully!",
-        username: req.session.user.username 
-    }));
+exports.getLoginStatus = async (req, res, next) => {
+    if (req.session.isLoggedIn = true) {
+        res.status(200).json({
+            message: "Fetched login status successfully!",
+            body: {
+                isLoggedIn: true,
+                user: req.session.user
+            } 
+        });    
+    } else {
+        res.status(200).json({
+            message: "Fetched login status successfully!",
+            body: {
+                isLoggedIn: false,
+                user: ''
+            } 
+        });    
+    }
+    
 }
 
-//Get User Info
-exports.getRequests = (req, res, next) => {
+//Get Prayer and Answered Requests
+exports.getRequests = async (req, res, next) => {
     Request.find({"userId": req.user._id})
     .then((result) => {
-        const requests = [];
+        const prayerRequests = [];
         const answeredRequests = [];
 
-        result.map((prayerRequest) => {
-            if (prayerRequest.answered) {
-                answeredRequests.push(prayerRequest)
+        result.map((request) => {
+            if (request.answered) {
+                answeredRequests.push(request)
             } else {
-                requests.push(prayerRequest)
+                prayerRequests.push(request)
             }
         })
         return (
             res.status(200).json({
                 message: "Fetched requests successfully!",
-                requests: requests,
-                answeredRequests: answeredRequests
+                body: { 
+                    pRequests: prayerRequests,
+                    aRequests: answeredRequests
+                }
             })
         )
     })
@@ -139,9 +165,10 @@ exports.getRequests = (req, res, next) => {
 }    
 
 //Add Request
-exports.postAddRequest = (req, res, next) => {
+exports.postAddRequest = async (req, res, next) => {
     const request = req.body.request;
     const note = req.body.note;
+    let message = ""
     
     console.log("User:" + req.user);
     console.log("User Session" + req.session.user);
@@ -151,38 +178,115 @@ exports.postAddRequest = (req, res, next) => {
         request: request,
         answered: false
     })
-    newRequest.save()
-    .then((result) => {
-        const newNote = new Note({
-            requestId: result._id,
-            date: new Date(),
-            note: note
-        })
-        newNote.save()
+    return newRequest.save()
+    .then((result, err) => {
+        if (!err) {
+            message = message + "New request added! "
+            if (note.length > 0) {
+                const newNote = new Note({
+                    requestId: result._id,
+                    date: new Date(),
+                    note: note
+                })
+                message = message + "New note added!"
+                return newNote.save()
+            }
+        } else {
+            next()
+        }
     })
+    .then((result, err) => {
+        if (err) {console.log(err)};
+        if (!err) {
+            console.log(message);
+            res.status(200).json({
+                message: "Request added!",
+            })
+        };
+    });     
 }
 
 //Answered Request
-exports.postAnsweredRequest = (req, res, next) => {
-
+exports.putAnswerRequest = async (req, res, next) => {
+    const requestId = req.params.requestId;
+    Request.findByIdAndUpdate(requestId, {answered: false})
+    .then((result) => {
+        res.status(200).json({
+            message: "Fetched requests successfully!",
+            body: result,
+        })
+    })
+    .catch( (err) => {
+        console.log(err);
+    });
 }
 
 //Remove Request
-exports.deleteRemoveRequest = (req, res, next) => {
-
-}
-
-//Remove Answered Request
-exports.deleteRemoveAnsweredRequest = (req, res, next) => {
-
+exports.deleteRemoveRequest = async (req, res, next) => {
+    const requestId = req.params.requestId;
+    Request.findByIdAndDelete(requestId)
+    .then((result) => {
+        res.status(200).json({
+            message: "Fetched requests successfully!",
+            body: result,
+        })
+    })
+    .catch( (err) => {
+        console.log(err);
+    });
 }
 
 //Add Note
-exports.postAddNote = (req, res, next) => {
-
-}
+exports.postAddNote = async (req, res, next) => {
+    const requestId = req.params.requestId;
+    const note = req.body.note;
+    let message;
+    
+    if (note.length > 0) {
+        const newNote = new Note({
+            requestId: requestId,
+            date: new Date(),
+            note: note
+        })
+        message = "New note added!"
+        return newNote.save()
+        .then((result, err) => {
+            if (err) {console.log(err)};
+            if (!err) {
+                console.log(message);
+                res.status(200).json({
+                    message: message,
+                })
+            };
+        });
+    } else {
+        throw("The 'note' field cannot be empty");
+    };
+};
 
 //Remove Note
-exports.deleteRemoveNote = (req, res, next) => {
+exports.deleteRemoveNote = async (req, res, next) => {
+    const noteId = req.params.noteId;
+    Note.findByIdAndDelete(noteId)
+    .then((result) => {
+        res.status(200).json({
+            message: "Fetched requests successfully!",
+            body: result,
+        })
+    })
+    .catch( (err) => {
+        console.log(err);
+    });
+}
 
+//Logout
+exports.deleteLogout = async (req, res, next) => {
+    const username = req.body.username;
+    const userId = req.body._id;
+    req.session.isLoggedIn = false;
+    req.session.user = '';
+    res.status(200).json({
+        message: username + "(" + userId + ") was logged out.",
+    })
+    console.log(username + "(" + userId + ") was logged out.")
 }

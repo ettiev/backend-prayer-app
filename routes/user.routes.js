@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+//const mongoose = require("mongoose");
 const path = require("path");
 const express = require("express");
 
@@ -28,7 +28,7 @@ router.post("/add_request", userController.postAddRequest);
 router.put("/answer_request/:requestId", userController.putAnswerRequest);
 
 //Remove Request
-router.delete("/remove_request/:requestId", userController.deleteRemoveRequest);
+router.delete("/delete_request/:requestId", userController.deleteRemoveRequest);
 
 //Add Note
 router.post("/add_note/:requestId", userController.postAddNote);

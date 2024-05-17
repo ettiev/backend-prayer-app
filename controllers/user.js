@@ -1,6 +1,9 @@
+const mongoose = require('mongoose');
+
 const User = require("../models/user");
 const Request = require("../models/request");
 const Note = require("../models/note");
+
 
 //New User
 exports.postNewUser = async (req, res, next) => {
@@ -132,50 +135,53 @@ exports.getLoginStatus = async (req, res, next) => {
 
 //Get Prayer and Answered Requests
 exports.getRequests = async (req, res, next) => {
-    Request.find({"userId": req.user._id})
-    .then((result) => {
-        const prayerRequests = [];
-        const answeredRequests = [];
+    if (req.user._id) {
+        Request.find({"userId": req.user._id})
+        .then((result) => {
+            const prayerRequests = [];
+            const answeredRequests = [];
 
-        result.map((request) => {
-            if (request.answered) {
-                answeredRequests.push(request)
-            } else {
-                prayerRequests.push(request)
-            }
-        })
-        return (
-            res.status(200).json({
-                message: "Fetched requests successfully!",
-                body: { 
-                    pRequests: prayerRequests,
-                    aRequests: answeredRequests
+            result.map((request) => {
+                if (request.answered) {
+                    answeredRequests.push(request)
+                } else {
+                    prayerRequests.push(request)
                 }
             })
+            return (
+                res.status(200).json({
+                    message: "Fetched requests successfully!",
+                    body: { 
+                        pRequests: prayerRequests,
+                        aRequests: answeredRequests
+                    }
+                })
+            )
+        })
+        .catch(
+            err => {
+                if (!err.statusCode) {
+                    err.statusCode = 500;
+                    console.log(err);
+                }
+            }    
         )
-    })
-    .catch(
-        err => {
-            if (!err.statusCode) {
-                err.statusCode = 500;
-                console.log(err);
-            }
-        }    
-    )
+    } else {
+        throw("There is no user logged in!");
+    }
 }    
 
 //Add Request
 exports.postAddRequest = async (req, res, next) => {
     const request = req.body.request;
+    const description = req.body.description;
     const note = req.body.note;
-    let message = ""
+    let message = "";
     
-    console.log("User:" + req.user);
-    console.log("User Session" + req.session.user);
-
     const newRequest = new Request({
         userId: req.session.user._id,
         request: request,
+        description: description,
         answered: false
     })
     return newRequest.save()
@@ -208,8 +214,9 @@ exports.postAddRequest = async (req, res, next) => {
 
 //Answered Request
 exports.putAnswerRequest = async (req, res, next) => {
-    const requestId = req.params.requestId;
-    Request.findByIdAndUpdate(requestId, {answered: false})
+    const stringId = req.params.requestId;
+    const requestId = new mongoose.Types.ObjectId(stringId);
+    Request.findByIdAndUpdate(requestId, {answered: true})
     .then((result) => {
         res.status(200).json({
             message: "Fetched requests successfully!",
@@ -223,7 +230,8 @@ exports.putAnswerRequest = async (req, res, next) => {
 
 //Remove Request
 exports.deleteRemoveRequest = async (req, res, next) => {
-    const requestId = req.params.requestId;
+    const stringId = req.params.requestId;
+    const requestId = new mongoose.Types.ObjectId(stringId);
     Request.findByIdAndDelete(requestId)
     .then((result) => {
         res.status(200).json({

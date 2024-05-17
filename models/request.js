@@ -12,6 +12,10 @@ const requestSchema = new Schema({
         type: String,
         required: true
     },
+    description: {
+        type: String,
+        required: true
+    },
     answered: {
         type: Boolean,
         required: true

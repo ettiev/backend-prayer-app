@@ -82,6 +82,10 @@ exports.postLogin = async (req, res, next) => {
             throw("The email or password that was entered is invalid!");
         }
     }))
+    .catch(err => {
+        console.log(err);
+    });
+
 //         if (!user) {
 //             req.flash("error", "Invalid email or password!")
 //             return res.redirect('/login');
@@ -113,7 +117,7 @@ exports.postLogin = async (req, res, next) => {
 }
 
 exports.getLoginStatus = async (req, res, next) => {
-    if (req.session.isLoggedIn = true) {
+    if (req.session.isLoggedIn === true) {
         res.status(200).json({
             message: "Fetched login status successfully!",
             body: {
@@ -135,7 +139,8 @@ exports.getLoginStatus = async (req, res, next) => {
 
 //Get Prayer and Answered Requests
 exports.getRequests = async (req, res, next) => {
-    if (req.user._id) {
+    console.log("LoggedIn: " + req.session.isLoggedIn);
+    if (req.session.isLoggedIn) {
         Request.find({"userId": req.user._id})
         .then((result) => {
             const prayerRequests = [];
@@ -148,6 +153,7 @@ exports.getRequests = async (req, res, next) => {
                     prayerRequests.push(request)
                 }
             })
+            
             return (
                 res.status(200).json({
                     message: "Fetched requests successfully!",
@@ -166,10 +172,27 @@ exports.getRequests = async (req, res, next) => {
                 }
             }    
         )
-    } else {
-        throw("There is no user logged in!");
-    }
+    } 
+    // else {
+    //     throw("There is no user logged in!");
+    // }
 }    
+
+// Get Single Request
+exports.getSingleRequest = async (req, res, next) => {
+    const requestId = req.body.requestId;
+    
+    Request.findOne({ requestId: requestId })
+    .then((result) => {
+        res.status(200).json({
+        message: "Fetched request successfully!",
+        body: result,
+        })
+    }) 
+    .catch(err => {
+        console.log(err);
+    });    
+}
 
 //Add Request
 exports.postAddRequest = async (req, res, next) => {
@@ -228,6 +251,27 @@ exports.putAnswerRequest = async (req, res, next) => {
     });
 }
 
+//Edit Request
+exports.putEditRequest = async (req, res, next) => {
+    const stringId = req.params.requestId;
+    const requestId = new mongoose.Types.ObjectId(stringId);
+    const request = req.body.request;
+    const description = req.body.description;
+    Request.findByIdAndUpdate(requestId, {
+        request: request,
+        description: description
+    })
+    .then((result) => {
+        res.status(200).json({
+            message: "Fetched requests successfully!",
+            body: result,
+        })
+    })
+    .catch( (err) => {
+        console.log(err);
+    });
+}
+
 //Remove Request
 exports.deleteRemoveRequest = async (req, res, next) => {
     const stringId = req.params.requestId;
@@ -246,14 +290,15 @@ exports.deleteRemoveRequest = async (req, res, next) => {
 
 //Add Note
 exports.postAddNote = async (req, res, next) => {
-    const requestId = req.params.requestId;
+    const requestId = new mongoose.Types.ObjectId(req.body.requestId);
+    const date = req.body.date;
     const note = req.body.note;
     let message;
     
     if (note.length > 0) {
         const newNote = new Note({
             requestId: requestId,
-            date: new Date(),
+            date: date,
             note: note
         })
         message = "New note added!"
@@ -271,6 +316,23 @@ exports.postAddNote = async (req, res, next) => {
         throw("The 'note' field cannot be empty");
     };
 };
+
+//Get Notes
+exports.getNotes = async (req, res, next) => {
+    const requestId = req.params.requestId;
+    Note.find({"requestId": requestId})
+    .then(result => {
+        return (
+            res.status(200).json({
+                message: "Fetched requests successfully!",
+                body: result
+            })
+        )    
+    })
+    .catch((err) => {
+        console.log(err); 
+    });
+}
 
 //Remove Note
 exports.deleteRemoveNote = async (req, res, next) => {

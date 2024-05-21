@@ -21,17 +21,26 @@ router.get("/login_status", userController.getLoginStatus);
 //Get Prayer and Answered Requests
 router.get("/requests", userController.getRequests);
 
+//Get Single Request
+router.get("/single_request/:requestId", userController.getSingleRequest);
+
 //Add Request
 router.post("/add_request", userController.postAddRequest);
 
 //Answered Request
 router.put("/answer_request/:requestId", userController.putAnswerRequest);
 
+//Edit Request
+router.put("/edit_request/:requestId", userController.putEditRequest);
+
 //Remove Request
 router.delete("/delete_request/:requestId", userController.deleteRemoveRequest);
 
 //Add Note
-router.post("/add_note/:requestId", userController.postAddNote);
+router.post("/add_note", userController.postAddNote);
+
+//Get Notes
+router.get("/notes/:requestId", userController.getNotes);
 
 //Remove Note
 router.delete("/remove_note/:noteId", userController.deleteRemoveNote);

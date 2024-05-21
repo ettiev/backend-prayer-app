@@ -60,11 +60,13 @@ app.use(session({
 
 app.use((req, res, next) => {
     if (!req.session.user) {
+        req.session.isLoggedIn = false;
         return next();
     };
     User.findById(req.session.user._id)
     .then((user => {
         req.user = user;
+        req.session.isLoggedIn = true;
         next();
     }))
     .catch(err => {

@@ -33,13 +33,7 @@ exports.postNewUser = async (req, res, next) => {
         )
     }
 };
-        //Test if user already exist
-//     User.findOne({email: email})
-//         .then(userDoc => {
-//             if (userDoc) {
-//                 req.flash("error", "E-mail already registered! Login with a valid password.");
-//                 return res.redirect("/signup");    
-//             }
+        
 //          // Encrypt and Hash Password   
 //          return bcrypt.hash(password, 12)
 //             .then(hashedPassword => {
@@ -49,13 +43,6 @@ exports.postNewUser = async (req, res, next) => {
 //                     cart: { items: [] }
 //                 });
 //                 return user.save();
-//             })
-//             .then(result => {
-//                 res.redirect("/login")
-//             })
-//             .catch(err => console.log(err))
-//         })
-// }
 
 //Login User
 exports.postLogin = async (req, res, next) => {
@@ -86,10 +73,7 @@ exports.postLogin = async (req, res, next) => {
         console.log(err);
     });
 
-//         if (!user) {
-//             req.flash("error", "Invalid email or password!")
-//             return res.redirect('/login');
-//         }
+
 //         bcrypt.compare(password, user.password)
 //         .then(doMatch => {
 //             if (doMatch) {
@@ -98,22 +82,6 @@ exports.postLogin = async (req, res, next) => {
 //                 return req.session.save((err) => {
 //                     if (err) {console.log(err)};
 //                     res.redirect("/");
-//                 })
-//             }
-//             req.flash("error", "Invalid email or password!");
-//             res.redirect("/login")
-
-//         })
-//         .catch((err) => {
-//             console.log(err);
-//             redirect("/login");
-//         })
-        
-//     }))
-//     .catch(err => {
-//         console.log(err);
-//     });
-// }
 }
 
 exports.getLoginStatus = async (req, res, next) => {
@@ -173,9 +141,6 @@ exports.getRequests = async (req, res, next) => {
             }    
         )
     } 
-    // else {
-    //     throw("There is no user logged in!");
-    // }
 }    
 
 // Get Single Request

@@ -1,12 +1,7 @@
-//const mongoose = require("mongoose");
-const path = require("path");
 const express = require("express");
 
 const router = express.Router();
 
-const userSchema = require("../models/user");
-const requestSchema = require("../models/request");
-const noteSchema = require("../models/note"); 
 const userController = require("../controllers/user");
 
 //New User
